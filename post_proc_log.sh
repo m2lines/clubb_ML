@@ -32,7 +32,7 @@ fi
 
 VARS=(
     "thvm" "thlm" "rtm" "em" "exner" "p_in_Pa" "thv_ds" "Lscale" "Lscale_up" 
-    "Lscale_down" "mu" "lmin" "saturation_formula" "l_implemented"
+    "Lscale_down" "mu" "lmin" "saturation_formula" "l_implemented" "Lscale_max"
 )
 
 # Extract argumnets

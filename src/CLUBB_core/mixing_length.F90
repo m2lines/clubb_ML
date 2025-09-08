@@ -1054,6 +1054,7 @@ module mixing_length
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thv_ds = ", thv_ds(i,:)
         ! Scalars
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "mu = ", mu(i)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale_max = ", Lscale_max
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "lmin = ", lmin
         write(fstderr, '(A, A, *(I0, :, ","))') PREFIX, "saturation_formula = ", saturation_formula
 
