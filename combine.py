@@ -94,8 +94,8 @@ def main(data_dir: str | Path, output_file: str | Path) -> None:
             "Lscale_up": (["samples", "zt"], arguments_dict["Lscale_up"]),
             "Lscale_down": (["samples", "zt"], arguments_dict["Lscale_down"]),
             # Dependent grid parameters
-            "invrv_dzm": (["zm"], grid_dict["invrs_dzm"]),
-            "invrv_dzt": (["zt"], grid_dict["invrs_dzt"]),
+            "invrs_dzm": (["zm"], grid_dict["invrs_dzm"]),
+            "invrs_dzt": (["zt"], grid_dict["invrs_dzt"]),
         },
         coords={
             "zt": grid_dict["zt"],
