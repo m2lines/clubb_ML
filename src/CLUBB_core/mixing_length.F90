@@ -1042,6 +1042,7 @@ module mixing_length
     ! Hardcode embarrasingly brutal input-output logging
     block 
       character(*), parameter :: PREFIX = "LOGPREFIX: "
+      character(5) :: logical_io_buffer
 
       do i = 1,ngrdcol
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thvm = ", thvm(i,:)
@@ -1051,6 +1052,20 @@ module mixing_length
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "exner = ", exner(i,:)
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "p_in_Pa = ", p_in_Pa(i,:)
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thv_ds = ", thv_ds(i,:)
+        ! Scalars
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "mu = ", mu(i)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "lmin = ", lmin
+        write(fstderr, '(A, A, *(I0, :, ","))') PREFIX, "saturation_formula = ", saturation_formula
+
+        ! To make post-processing easier print logicals in Format Python will understand
+        if (l_implemented) then 
+          logical_io_buffer = "True"
+        else 
+          logical_io_buffer = "False"
+        endif
+        write(fstderr, '(A, A, *(A, :, ","))') PREFIX, "l_implemented = ", logical_io_buffer
+
+        ! Outputs
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale = ", Lscale(i,:)
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale_up = ", Lscale_up(i,:)
         write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale_down = ", Lscale_down(i,:)

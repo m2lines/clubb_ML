@@ -30,8 +30,13 @@ if [ ! -d ${OUTPUT} ]; then
     mkdir -p ${OUTPUT}
 fi
 
+VARS=(
+    "thvm" "thlm" "rtm" "em" "exner" "p_in_Pa" "thv_ds" "Lscale" "Lscale_up" 
+    "Lscale_down" "mu" "lmin" "saturation_formula" "l_implemented"
+)
+
 # Extract argumnets
-for var in "thvm" "thlm" "rtm" "em" "exner" "p_in_Pa" "thv_ds" "Lscale" "Lscale_up" "Lscale_down"; do
+for var in "${VARS[@]}"; do
     PATTERN="^${LOGPREFIX}: ${var} ="
     grep "${PATTERN}" ${FILE} | sed -e "s/${PATTERN}//" > ${OUTPUT}/${var}.csv 
 done

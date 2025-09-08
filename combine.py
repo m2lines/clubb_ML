@@ -5,18 +5,22 @@ import re
 from pathlib import Path
 from numpy.typing import NDArray
 
-ARGUMENTS = [
-    "thvm",
-    "thlm",
-    "rtm",
-    "em",
-    "exner",
-    "p_in_Pa",
-    "thv_ds",
-    "Lscale",
-    "Lscale_up",
-    "Lscale_down",
-]
+NAME_DTYPE = {
+    "thvm": np.float64,
+    "thlm": np.float64,
+    "rtm": np.float64,
+    "em": np.float64,
+    "exner": np.float64,
+    "p_in_Pa": np.float64,
+    "thv_ds": np.float64,
+    "Lscale": np.float64,
+    "Lscale_up": np.float64,
+    "Lscale_down": np.float64,
+    "mu": np.float64,
+    "lmin": np.float64,
+    "saturation_formula": np.int32,
+    "l_implemented": np.bool,
+}
 
 INT_REGEX = re.compile(r"\s*[0-9]+\s*")
 
@@ -51,10 +55,10 @@ def parse_grid_info(path: Path | str) -> dict[str, int | NDArray]:
     return dict(map(process_line, grid_lines))
 
 
-def load_to_numpy(data_dir: Path, var: str) -> NDArray:
+def load_to_numpy(data_dir: Path, var: str, dtype: np.dtype) -> NDArray:
     """Loads a CSV for a variable from the output directory"""
     path = data_dir / f"{var}.csv"
-    data = np.loadtxt(path, delimiter=",")
+    data = np.genfromtxt(path, delimiter=",", dtype=dtype, autostrip=True)
     return data
 
 
@@ -67,7 +71,9 @@ def main(data_dir: str | Path, output_file: str | Path) -> None:
         raise ValueError(f"Data directory {data_dir} does not exist")
 
     grid_dict = parse_grid_info(data_dir / "grid_file")
-    arguments_dict = {var: load_to_numpy(data_dir, var) for var in ARGUMENTS}
+    arguments_dict = {
+        var: load_to_numpy(data_dir, var, dtype) for var, dtype in NAME_DTYPE.items()
+    }
 
     xr.Dataset(
         data_vars={
@@ -79,6 +85,10 @@ def main(data_dir: str | Path, output_file: str | Path) -> None:
             "exner": (["samples", "zt"], arguments_dict["exner"]),
             "p_in_Pa": (["samples", "zt"], arguments_dict["p_in_Pa"]),
             "thv_ds": (["samples", "zt"], arguments_dict["thv_ds"]),
+            "mu": (["samples"], arguments_dict["mu"]),
+            "lmin": (["samples"], arguments_dict["lmin"]),
+            "saturation_formula": (["samples"], arguments_dict["saturation_formula"]),
+            "l_implemented": (["samples"], arguments_dict["l_implemented"]),
             # Outputs
             "Lscale": (["samples", "zt"], arguments_dict["Lscale"]),
             "Lscale_up": (["samples", "zt"], arguments_dict["Lscale_up"]),
