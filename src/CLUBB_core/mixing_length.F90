@@ -248,6 +248,31 @@ module mixing_length
 
     ! --------------------------------- Begin Code ---------------------------------
 
+    block 
+      logical, save :: already_done = .false.
+      character(*), parameter :: PREFIX = "GRIDPREFIX:"
+      if (.not. already_done) then 
+        do i = 1, ngrdcol
+          ! We can serialize the grid here 
+          write(fstderr, '(A, A, I0)') PREFIX, "nzm = ", gr % nzm
+          write(fstderr, '(A, A, I0)') PREFIX, "nzt = ", gr % nzt
+          write(fstderr, '(A, A, I0)') PREFIX, "k_lb_zm = ", gr % k_lb_zm
+          write(fstderr, '(A, A, I0)') PREFIX, "k_lb_zt = ", gr % k_lb_zt
+          write(fstderr, '(A, A, I0)') PREFIX, "k_ub_zm = ", gr % k_ub_zm
+          write(fstderr, '(A, A, I0)') PREFIX, "k_ub_zt = ", gr % k_ub_zt
+
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "zm = ", gr % zm(i, :)
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "zt = ", gr % zt(i, :)
+
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "invrs_dzm = ", gr % invrs_dzm(i, :)
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "invrs_dzt = ", gr % invrs_dzt(i, :)
+
+        end do
+        already_done = .true.  
+      end if
+    end block 
+
+
     !$acc enter data create( exp_mu_dzm, invrs_dzm_on_mu, grav_on_thvm, Lv_coef, &
     !$acc                    entrain_coef, thl_par_j_precalc, rt_par_j_precalc, &
     !$acc                    tl_par_1, rt_par_1, rsatl_par_1, thl_par_1, dCAPE_dz_1, &
@@ -1012,6 +1037,29 @@ module mixing_length
       
     end do
     !$acc end parallel loop
+
+
+    ! Hardcode embarrasingly brutal input-output logging
+    block 
+      character(*), parameter :: PREFIX = "LOGPREFIX: "
+
+      do i = 1,ngrdcol
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thvm = ", thvm(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thlm = ", thlm(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "rtm = ", rtm(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "em = ", em(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "exner = ", exner(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "p_in_Pa = ", p_in_Pa(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "thv_ds = ", thv_ds(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale = ", Lscale(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale_up = ", Lscale_up(i,:)
+        write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "Lscale_down = ", Lscale_down(i,:)
+        write(fstderr, '(A,"=================")') PREFIX
+      end do
+
+
+
+    end block
 
     ! Ensure that no Lscale values are NaN
     if ( clubb_at_least_debug_level_api( 1 ) ) then
