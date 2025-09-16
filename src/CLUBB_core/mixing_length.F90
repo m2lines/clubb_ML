@@ -264,6 +264,9 @@ module mixing_length
           write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "zm = ", gr % zm(i, :)
           write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "zt = ", gr % zt(i, :)
 
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "dzm = ", gr % dzm(i, :)
+          write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "dzt = ", gr % dzt(i, :)
+
           write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "invrs_dzm = ", gr % invrs_dzm(i, :)
           write(fstderr, '(A, A, *(E24.17, :, ","))') PREFIX, "invrs_dzt = ", gr % invrs_dzt(i, :)
 

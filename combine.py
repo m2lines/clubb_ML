@@ -98,6 +98,8 @@ def main(data_dir: str | Path, output_file: str | Path) -> None:
             # Dependent grid parameters
             "invrs_dzm": (["zm"], grid_dict["invrs_dzm"]),
             "invrs_dzt": (["zt"], grid_dict["invrs_dzt"]),
+            "dzm": (["zm"], grid_dict["dzm"]), # I don't know why dimension is not reduced :-/ 
+            "dzt": (["zt"], grid_dict["dzt"]),
         },
         coords={
             "zt": grid_dict["zt"],
