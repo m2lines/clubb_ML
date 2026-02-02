@@ -35,6 +35,12 @@ OPTIMIZE="-O3 -fp-model strict"
 #Variable defined in larson-group.sh, see here (https://github.com/larson-group/sys_admin/blob/master/set_larson-group_paths/larson-group.sh)
 NETCDF="$(nf-config --prefix)"
 
+# == FTorch Flags ==
+# The following requires the user to have already added the FTorch location to PKG_CONFIG_PATH
+# e.g. export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/path/to/FTorch-install/lib64/pkgconfig
+LDFLAGS_FTORCH="$(pkg-config --libs ftorch)"
+CPPFLAGS_FTORCH="$(pkg-config --cflags ftorch)"
+
 # == LAPACK libraries ==
 # AMD Core Math Library
 #ACML="/opt/acml5.1.0/ifort64/lib"
@@ -43,7 +49,7 @@ NETCDF="$(nf-config --prefix)"
 # == Linking Flags ==
 # Use -s to strip (no debugging); 
 # Use -L<library path> -l<lib> to link in an external library
-LDFLAGS="-L$NETCDF/lib -lnetcdff $LAPACK"
+LDFLAGS="-L$NETCDF/lib -lnetcdff $LAPACK $LDFLAGS_FTORCH"
 
 FFLAGS="$ARCH $OPTIMIZE $DEBUG"
 
@@ -56,7 +62,7 @@ FFLAGS="$ARCH $OPTIMIZE $DEBUG"
 # Need location of include and *.mod files for the netcdf library
 
 CPPDEFS="-DNETCDF -DCLUBB_REAL_TYPE=8"
-CPPFLAGS="-I$NETCDF/include"
+CPPFLAGS="-I$NETCDF/include $CPPFLAGS_FTORCH"
 
 # == Static library processing ==
 AR=ar
