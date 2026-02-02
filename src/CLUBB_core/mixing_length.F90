@@ -183,6 +183,7 @@ module mixing_length
         Lv,             & ! Latent heat of vaporiztion                 [J/kg/K]
         grav,           & ! Gravitational acceleration                 [m/s^2]
         fstderr,        &
+        fstdout,        &
         zero_threshold, &
         eps,            &
         one_half,       &
@@ -209,6 +210,8 @@ module mixing_length
 
     use err_info_type_module, only: &
       err_info_type     ! Type
+
+    use ftorch
 
     implicit none
 
@@ -314,13 +317,26 @@ module mixing_length
         invrs_dCAPE_diff, &
         invrs_Lscale_sfclyr_depth
 
+    !--------------------------------- FTorch Variables ---------------------------------
+    real( kind = core_rknd ), dimension(4), target :: ftorch_array_1, ftorch_array_2, ftorch_array_out
+    type(torch_tensor) :: ftorch_tensor_1, ftorch_tensor_2, ftorch_tensor_out
+
     ! --------------------------------- Begin Code ---------------------------------
 
     !$acc enter data create( exp_mu_dzm, invrs_dzm_on_mu, grav_on_thvm, Lv_coef, &
     !$acc                    entrain_coef, thl_par_j_precalc, rt_par_j_precalc, &
     !$acc                    tl_par_1, rt_par_1, rsatl_par_1, thl_par_1, dCAPE_dz_1, &
     !$acc                    s_par_1, rc_par_1, CAPE_incr_1, thv_par_1, tke_i )
- 
+
+    ftorch_array_1 = [1.0, 2.0, 3.0, 4.0]
+    ftorch_array_2 = [1.0, 2.0, 3.0, 4.0]
+    call torch_tensor_from_array(ftorch_tensor_1, ftorch_array_1, torch_kCPU)
+    call torch_tensor_from_array(ftorch_tensor_2, ftorch_array_2, torch_kCPU)
+    call torch_tensor_from_array(ftorch_tensor_out, ftorch_array_out, torch_kCPU)
+    ftorch_tensor_out = ftorch_tensor_1 + ftorch_tensor_2
+    write(unit=fstdout,fmt='(f8.2, f8.2, f8.2, f8.2)') ftorch_array_out(1), ftorch_array_out(2), &
+                                                       ftorch_array_out(3), ftorch_array_out(4)
+
     !$acc parallel loop gang vector default(present)
     do i = 1, ngrdcol
       if ( abs(mu(i)) < eps ) then
