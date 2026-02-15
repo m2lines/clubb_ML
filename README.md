@@ -71,6 +71,11 @@ cd ../run_scripts/
 ./run_scm.bash bomex
 ```
 
+The use of the ML scheme for the C14 parameter can be turned on using the
+`l_c14_ml` parameter in `input/tuneable_parameters/configurable_model_flags.in`.
+If set to `.true.` then the path to the saved net should be provided as a character
+string using the `c14_ml_net_filepath` parameter.
+
 Output will be placed in the `output/` directory
 
 
