@@ -892,6 +892,9 @@ module clubb_driver
       setup_gr_fixed_min, &
       setup_gr_dycore
 
+    use advance_xp2_xpyp_module, only: &
+      setup_C14_ML_xp2_xpyp   !------------------------------------------ Procedure(s)
+
     implicit none
 
     character(len=*), intent(in) :: &
@@ -2669,6 +2672,11 @@ module clubb_driver
     
     call set_case_initial_conditions(ngrdcol, clubb_params, err_info)
 
+    ! If using the ML scheme for C14 in advance_xp2_xpyp load the Neural Net
+    if ( clubb_config_flags%l_c14_ml ) then
+      call setup_C14_ML_xp2_xpyp( clubb_config_flags%c14_ml_net_filepath )
+    end if
+
   end subroutine init_clubb_case
 
   !=============================================================================================
@@ -4275,6 +4283,9 @@ module clubb_driver
         cleanup_latin_hypercube_arrays !------------------ Procedure(s)
 #endif
 
+    use advance_xp2_xpyp_module, only: &
+      clean_up_C14_ML_xp2_xpyp   !--------------------------------------- Procedure(s)
+
     implicit none
 
     integer, intent(in) :: &
@@ -4664,6 +4675,11 @@ module clubb_driver
               Nccnm_init, &
               sclrm_init, &
               edsclrm_init )
+
+    ! If using the ML scheme for C14 in advance_xp2_xpyp clean up the Neural Net
+    if ( clubb_config_flags%l_c14_ml ) then
+      call clean_up_C14_ML_xp2_xpyp()
+    end if
 
   end subroutine clean_up_clubb
 

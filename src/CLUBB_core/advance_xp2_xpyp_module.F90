@@ -7,9 +7,17 @@ module advance_xp2_xpyp_module
   ! Contains the subroutine advance_xp2_xpyp and ancillary functions.
   !-----------------------------------------------------------------------
 
+  use ftorch, only: &
+    torch_kCPU, &  ! --------------- Type(s)
+    torch_model, &
+    torch_model_load, &  ! --------- Procedure(s)
+    torch_delete
+
   implicit none
 
-  public :: advance_xp2_xpyp, &
+  public :: setup_C14_ML_xp2_xpyp, &
+            clean_up_C14_ML_xp2_xpyp, &
+            advance_xp2_xpyp, &
             update_xp2_mc
 
   private :: xp2_xpyp_lhs, & 
@@ -44,7 +52,50 @@ module advance_xp2_xpyp_module
     ndiags3 = 3,  &
     ndiags5 = 5
 
+  type(torch_model) :: C14_neural_net
+
   contains
+
+  subroutine setup_C14_ML_xp2_xpyp( c14_net_filepath )
+    ! Description:
+    ! If using the C14 Machine Learnt scheme load the net as a module variable during
+    ! startup before CLUBB starts timestepping loop.
+
+    ! Added by Jack Atkinson <jwa34@cam.ac.uk> of ICCS Feb 2026
+    !-----------------------------------------------------------------------
+
+    use constants_clubb, only:  &
+      fstdout
+
+    implicit none
+
+    character(len=100), intent(in) :: &
+      c14_net_filepath  ! Filepath to the C14 neural net
+
+    write(unit=fstdout, fmt='(a,a)') "Reading NN from: ", c14_net_filepath
+
+    call torch_model_load(C14_neural_net, c14_net_filepath, torch_kCPU)
+
+  end subroutine setup_C14_ML_xp2_xpyp
+
+  subroutine clean_up_C14_ML_xp2_xpyp()
+    ! Description:
+    ! If using the C14 Machine Learnt scheme destroy the net as a module variable during
+    ! CLUBB clean up after timestepping loop.
+
+    ! Added by Jack Atkinson <jwa34@cam.ac.uk> of ICCS Feb 2026
+    !-----------------------------------------------------------------------
+
+    use constants_clubb, only:  &
+      fstdout
+
+    implicit none
+
+    write(unit=fstdout, fmt='(a)') "Deleting NN"
+
+    call torch_delete( C14_neural_net )
+
+  end subroutine clean_up_C14_ML_xp2_xpyp
 
   !=============================================================================
   subroutine advance_xp2_xpyp( nzm, nzt, ngrdcol, sclr_dim, sclr_tol, gr, sclr_idx,& ! In
