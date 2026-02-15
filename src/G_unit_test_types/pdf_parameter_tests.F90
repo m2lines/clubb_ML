@@ -567,7 +567,11 @@ module pdf_parameter_tests
                                       ! the surface flux, to avoid double counting.
       l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                       ! that takes TKE from up2 and vp2, if necessary
-      l_add_dycore_grid               ! Turn on remapping from the dycore grid
+      l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
+      l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+    character(len=100) :: &
+      c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
     integer, parameter :: iunit = 10
 
@@ -656,7 +660,9 @@ module pdf_parameter_tests
                                              l_mono_flux_lim_spikefix, &
                                              l_host_applies_sfc_fluxes, &
                                              l_wp2_fill_holes_tke, &
-                                             l_add_dycore_grid )
+                                             l_add_dycore_grid, &
+                                             l_c14_ml, &
+                                             c14_ml_net_filepath)
 
     iiPDF_type = test_pdf_type
 
