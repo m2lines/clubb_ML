@@ -57,6 +57,8 @@ l_mono_flux_lim_spikefix     = .true.,
 l_host_applies_sfc_fluxes    = .false.,
 l_wp2_fill_holes_tke         = .true.
 l_add_dycore_grid            = .false.
+l_c14_ml                     = .false.
+c14_ml_net_filepath          = ""
 /
 
 &configurable_silhs_flags_nl

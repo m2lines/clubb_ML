@@ -975,7 +975,11 @@ module clubb_driver
                                       ! the surface flux, to avoid double counting.
       l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                       ! that takes TKE from up2 and vp2, if necessary
-      l_add_dycore_grid               ! Turn on remapping values from a dycore grid
+      l_add_dycore_grid,            & ! Turn on remapping values from a dycore grid
+      l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+    character(len=100) :: &
+      c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
     logical :: &
       l_first_write_to_file  ! whether this is the first time data gets written
@@ -1044,7 +1048,7 @@ module clubb_driver
       l_linearize_pbl_winds, l_mono_flux_lim_thlm, &
       l_mono_flux_lim_rtm, l_mono_flux_lim_um, l_mono_flux_lim_vm, l_mono_flux_lim_spikefix, &
       l_host_applies_sfc_fluxes, l_wp2_fill_holes_tke, &
-      l_add_dycore_grid
+      l_add_dycore_grid, l_c14_ml, c14_ml_net_filepath
 
     character(len=100) :: &
       output_file_prefix
@@ -1235,7 +1239,9 @@ module clubb_driver
                                              l_mono_flux_lim_spikefix, & ! Intent(out)
                                              l_host_applies_sfc_fluxes, & ! Intent(out)
                                              l_wp2_fill_holes_tke, & ! Intent(out)
-                                             l_add_dycore_grid ) ! Intent(out)
+                                             l_add_dycore_grid, & ! Intent(out)
+                                             l_c14_ml, & ! Intent(out)
+                                             c14_ml_net_filepath ) ! Intent(out)
 
     ! Read namelist file
     open(unit=iunit, file=trim( runfile ), status='old')
@@ -1735,6 +1741,8 @@ module clubb_driver
                                                  l_host_applies_sfc_fluxes, & ! Intent(in)
                                                  l_wp2_fill_holes_tke, & ! Intent(in)
                                                  l_add_dycore_grid, & ! Intent(out)
+                                                 l_c14_ml, & ! Intent(out)
+                                                 c14_ml_net_filepath, & ! Intent(out)
                                                  clubb_config_flags ) ! Intent(out)
 
     ! Printing configurable CLUBB flags Inputs

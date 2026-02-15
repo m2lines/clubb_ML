@@ -678,7 +678,11 @@ subroutine logical_flags_driver( current_date, current_time )
                                     ! the surface flux, to avoid double counting.
     l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                     ! that takes TKE from up2 and vp2, if necessary
-    l_add_dycore_grid               ! Turn on remapping values from the dycore grid
+    l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
+    l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+  character(len=100) :: &
+    c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
   namelist /configurable_clubb_flags_nl/ &
     iiPDF_type, ipdf_call_placement, penta_solve_method, tridiag_solve_method, &
@@ -698,7 +702,7 @@ subroutine logical_flags_driver( current_date, current_time )
     l_lmm_stepping, l_e3sm_config, l_vary_convect_depth, l_use_tke_in_wp3_pr_turb_term, &
     l_use_tke_in_wp2_wp3_K_dfsn, l_use_wp3_lim_with_smth_Heaviside, &
     l_smooth_Heaviside_tau_wpxp, l_modify_limiters_for_cnvg_test, l_host_applies_sfc_fluxes, &
-    l_wp2_fill_holes_tke, l_add_dycore_grid
+    l_wp2_fill_holes_tke, l_add_dycore_grid, l_c14_ml, c14_ml_net_filepath
 
   ! ---- Begin Code ----
 
@@ -765,7 +769,9 @@ subroutine logical_flags_driver( current_date, current_time )
                                            l_mono_flux_lim_spikefix,          & ! Intent(out)
                                            l_host_applies_sfc_fluxes,         & ! Intent(out)
                                            l_wp2_fill_holes_tke,              & ! Intent(out)
-                                           l_add_dycore_grid )                  ! Intent(out)
+                                           l_add_dycore_grid,                 & ! Intent(out)
+                                           l_c14_ml,                          & ! Intent(out)
+                                           c14_ml_net_filepath )                ! Intent(out)
 
   ! Determine the current flags
   model_flags_default(1) = l_godunov_upwind_wpxp_ta

@@ -286,7 +286,11 @@ module model_flags
                                       ! the surface flux, to avoid double counting.
       l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                       ! that takes TKE from up2 and vp2, if necessary
-      l_add_dycore_grid               ! Turn on remapping values from the dycore grid
+      l_add_dycore_grid,            & ! Turn on remapping values from the dycore grid
+      l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+    character(len=100) :: &
+      c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
   end type clubb_config_flags_type
 
@@ -356,7 +360,9 @@ module model_flags
                                                  l_mono_flux_lim_spikefix, &
                                                  l_host_applies_sfc_fluxes, &
                                                  l_wp2_fill_holes_tke, &
-                                                 l_add_dycore_grid )
+                                                 l_add_dycore_grid,&
+                                                 l_c14_ml, &
+                                                 c14_ml_net_filepath)
 
 ! Description:
 !   Sets all CLUBB flags to a default setting.
@@ -504,7 +510,11 @@ module model_flags
                                       ! the surface flux, to avoid double counting.
       l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                       ! that takes TKE from up2 and vp2, if necessary
-      l_add_dycore_grid               ! Turn on remapping from the dycore grid
+      l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
+      l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+    character(len=100) :: &
+      c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
 !-----------------------------------------------------------------------
     ! Begin code
@@ -579,6 +589,8 @@ module model_flags
     l_host_applies_sfc_fluxes = .false.
     l_wp2_fill_holes_tke = .true.
     l_add_dycore_grid = .false.
+    l_c14_ml = .false.
+    c14_ml_net_filepath = ''
 
     return
   end subroutine set_default_clubb_config_flags_api
@@ -648,6 +660,8 @@ module model_flags
                                                      l_host_applies_sfc_fluxes, &
                                                      l_wp2_fill_holes_tke, &
                                                      l_add_dycore_grid, &
+                                                     l_c14_ml, & ! Intent(out)
+                                                     c14_ml_net_filepath, & ! Intent(out)
                                                      clubb_config_flags )
 
 ! Description:
@@ -796,7 +810,11 @@ module model_flags
                                       ! the surface flux, to avoid double counting.
       l_wp2_fill_holes_tke,         & ! Turn on additional hole-filling for wp2
                                       ! that takes TKE from up2 and vp2, if necessary
-      l_add_dycore_grid               ! Turn on remapping from the dycore grid
+      l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
+      l_c14_ml                        ! Flag to turn on neural net C14 scheme
+
+    character(len=100) :: &
+      c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
     ! Output variables
     type(clubb_config_flags_type), intent(out) :: &
@@ -873,6 +891,8 @@ module model_flags
     clubb_config_flags%l_host_applies_sfc_fluxes = l_host_applies_sfc_fluxes
     clubb_config_flags%l_wp2_fill_holes_tke = l_wp2_fill_holes_tke
     clubb_config_flags%l_add_dycore_grid = l_add_dycore_grid
+    clubb_config_flags%l_c14_ml = l_c14_ml
+    clubb_config_flags%c14_ml_net_filepath = c14_ml_net_filepath
 
     return
   end subroutine initialize_clubb_config_flags_type_api
@@ -968,6 +988,8 @@ module model_flags
     write(iunit,*) "l_host_applies_sfc_fluxes = ",clubb_config_flags%l_host_applies_sfc_fluxes
     write(iunit,*) "l_wp2_fill_holes_tke = ",clubb_config_flags%l_wp2_fill_holes_tke
     write(iunit,*) "l_add_dycore_grid = ",clubb_config_flags%l_add_dycore_grid
+    write(iunit,*) "l_c14_ml = ",clubb_config_flags%l_c14_ml
+    write(iunit,*) "c14_ml_net_filepath = ",clubb_config_flags%c14_ml_net_filepath
 
     return
   end subroutine print_clubb_config_flags_api
