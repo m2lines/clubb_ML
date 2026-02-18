@@ -9,8 +9,11 @@ module advance_xp2_xpyp_module
 
   use ftorch, only: &
     torch_kCPU, &  ! --------------- Type(s)
+    torch_tensor, &
     torch_model, &
-    torch_model_load, &  ! --------- Procedure(s)
+    torch_tensor_from_array, &  ! ---- Procedure(s)
+    torch_model_load, &
+    torch_model_forward, &
     torch_delete
 
   implicit none
@@ -102,7 +105,8 @@ module advance_xp2_xpyp_module
                                invrs_tau_xp2_zm, invrs_tau_C4_zm,         & ! In
                                invrs_tau_C14_zm, wm_zm,                   & ! In
                                rtm, wprtp, thlm, wpthlp, wpthvp, um, vm,  & ! In
-                               wp2, wp2_zt, wp3, upwp, vpwp,              & ! In
+                               wp2, wp2_zt, wp3, upwp, vpwp, em,          & ! In
+                               Lscale_up, Lscale_down,                    & ! In
                                sigma_sqd_w, wprtp2, wpthlp2,              & ! In
                                wprtpthlp, Kh_zt, rtp2_forcing,            & ! In
                                thlp2_forcing, rtpthlp_forcing,            & ! In
@@ -125,6 +129,7 @@ module advance_xp2_xpyp_module
                                l_upwind_xpyp_ta,                          & ! In
                                l_godunov_upwind_xpyp_ta,                  & ! In
                                l_lmm_stepping,                            & ! In
+                               l_c14_ml,                                  & ! In
                                stats_metadata,                            & ! In
                                stats_zt, stats_zm, stats_sfc,             & ! In
                                rtp2, thlp2, rtpthlp, up2, vp2,            & ! Inout
@@ -266,6 +271,7 @@ module advance_xp2_xpyp_module
       wp2,              & ! <w'^2> (momentum levels)              [m^2/s^2]
       upwp,             & ! <u'w'> (momentum levels)              [m^2/s^2]
       vpwp,             & ! <v'w'> (momentum levels)              [m^2/s^2]
+      em,               & ! Turbulence kinetic energy             [m^2/s^2]
       sigma_sqd_w,      & ! sigma_sqd_w (momentum levels)         [-]
       rtp2_forcing,     & ! <r_t'^2> forcing (momentum levels)    [(kg/kg)^2/s]
       thlp2_forcing,    & ! <th_l'^2> forcing (momentum levels)   [K^2/s]
@@ -282,6 +288,8 @@ module advance_xp2_xpyp_module
       vm,               & ! v wind (thermodynamic levels)         [m/s]
       wp2_zt,           & ! <w'^2> interpolated to thermo. levels [m^2/s^2]
       wp3,              & ! <w'^3> (thermodynamic levels)         [m^3/s^3]
+      Lscale_up,        & ! Length scale (upwards component)      [m]
+      Lscale_down,      & ! Length scale (downwards component)    [m]
       wprtp2,           & ! <w'r_t'^2> (thermodynamic levels)     [m/s (kg/kg)^2]
       wpthlp2,          & ! <w'th_l'^2> (thermodynamic levels)    [m/s K^2]
       wprtpthlp,        & ! <w'r_t'th_l'> (thermodynamic levels)  [m/s (kg/kg) K]
@@ -349,7 +357,8 @@ module advance_xp2_xpyp_module
                                    ! centered differencing for turbulent or mean advection terms.
                                    ! It affects rtp2, thlp2, up2, vp2, sclrp2, rtpthlp, sclrprtp, 
                                    ! & sclrpthlp.
-      l_lmm_stepping               ! Apply Linear Multistep Method (LMM) Stepping
+      l_lmm_stepping,            & ! Apply Linear Multistep Method (LMM) Stepping
+      l_c14_ml                  ! Use a Machine Learnt scheme for calculating C14
 
     type (stats_metadata_type), intent(in) :: &
       stats_metadata
@@ -382,7 +391,9 @@ module advance_xp2_xpyp_module
       thlp2_old,   & ! Saved value of <th_l'^2>        [K^2]
       rtpthlp_old, & ! Saved value of <r_t'th_l'>      [(kg K)/kg]
       up2_old,     & ! Saved value of <u'^2>           [m^2/s^2]
-      vp2_old        ! Saved value of <v'^2>           [m^2/s^2]
+      vp2_old,     & ! Saved value of <v'^2>           [m^2/s^2]
+      Lscale_up_zm,  & ! Length scale (upwards component)   (momentum levels) [m]
+      Lscale_down_zm   ! Length scale (downwards component) (momentum levels) [m]
 
     real( kind = core_rknd ), dimension(ngrdcol,nzm,sclr_dim) ::  & 
       sclrp2_old,    & ! Saved value of <sclr'^2>     [units vary]
@@ -485,6 +496,13 @@ module advance_xp2_xpyp_module
     integer :: sclr, k, i
 
     logical :: l_single_solve_possible
+
+    type(torch_tensor), dimension(1) :: c14_tensor_in
+    type(torch_tensor), dimension(1) :: c14_tensor_out
+    real( kind = core_rknd ), dimension(5) :: &
+      c14_ml_input
+    real( kind = core_rknd ), dimension(1) :: &
+      c14_ml_output
     
     !------------------------------ Begin Code ------------------------------
     
@@ -583,6 +601,40 @@ module advance_xp2_xpyp_module
       end do
     end do
     !$acc end parallel loop
+
+    ! ML scheme for C14
+    ! Currently performed in a loop one cell at a time.
+    ! Once this is working we can move towards batching a column at a time or multiple
+    ! columns at once.
+    if ( l_c14_ml ) then
+
+      ! Interpolate Lscales from thermal to momentum grid
+      Lscale_up_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_up(:,:), zero_threshold )
+      Lscale_down_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_down(:,:), zero_threshold )
+
+      do k = 1, nzm
+        do i = 1, ngrdcol
+          c14_ml_input(1) = up2(i,k) / em(i,k)
+          c14_ml_input(2) = vp2(i,k) / em(i,k)
+          c14_ml_input(3) = wp2(i,k) / em(i,k)
+          c14_ml_input(4) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
+          c14_ml_input(5) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
+
+          call torch_tensor_from_array(c14_tensor_in(1), c14_ml_input, torch_kCPU)
+          call torch_tensor_from_array(c14_tensor_out(1), c14_ml_output, torch_kCPU)
+          call torch_model_forward(C14_neural_net, c14_tensor_in, c14_tensor_out)
+
+          ! This does not "delete" the Fortran `torch_tensor`s, but rather cleans up
+          ! any pointers in C++ and Fortran now we are done with them before creating new
+          ! ones with subsequent calls to `torch_tensor_from_array`
+          call torch_delete(c14_tensor_in)
+          call torch_delete(c14_tensor_out)
+
+          C14_1d(i,k) = c14_ml_output(1)
+        end do
+      end do
+
+    endif ! l_c14_ml
     
     ! Are we solving for passive scalars as well?
     if ( sclr_dim > 0 ) then
