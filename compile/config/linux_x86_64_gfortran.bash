@@ -54,6 +54,12 @@ OPTIMIZE="-O2"
 #Variable defined in larson-group.sh, see here (https://github.com/larson-group/sys_admin/blob/master/set_larson-group_paths/larson-group.sh)
 NETCDF="$(nf-config --prefix)"
 
+# == FTorch Flags ==
+# The following requires the user to have already added the FTorch location to PKG_CONFIG_PATH
+# e.g. export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/path/to/FTorch-install/lib64/pkgconfig
+LDFLAGS_FTORCH="$(pkg-config --libs ftorch)"
+CPPFLAGS_FTORCH="$(pkg-config --cflags ftorch)"
+
 # == LAPACK libraries ==
 #LAPACK="-llapack -lblas" # The netlib reference LAPACK/BLAS
 #ACML="/opt/acml4.4.0/gfortran64/lib"
@@ -64,7 +70,7 @@ NETCDF="$(nf-config --prefix)"
 # Use -L<library path> -l<lib> to link in an external library
 # Use -Wl,-rpath <library path> to set a search path for shared libs
 #LDFLAGS="-L$NETCDF/lib -lnetcdf -lnetcdff $LAPACK" # Ubuntu
-LDFLAGS="$ARCH -L$NETCDF/lib -lnetcdff $LAPACK" # RHEL5
+LDFLAGS="$ARCH -L$NETCDF/lib -lnetcdff $LAPACK $LDFLAGS_FTORCH" # RHEL5
 
 # == Compiler flags ==
 # You will need to `make clean' if you change these
@@ -77,7 +83,7 @@ FFLAGS="$ARCH $DEBUG $OPTIMIZE"
 NETCDF_INCLUDE="$NETCDF/include/" # Ubuntu 10 LTS location
 #NETCDF_INCLUDE="$NETCDF/lib/gfortran/modules/" # Fedora Core 11 location
 CPPDEFS="-DNETCDF -D__GFORTRAN__ -DCLUBB_REAL_TYPE=8"
-CPPFLAGS="-I$NETCDF_INCLUDE"
+CPPFLAGS="-I$NETCDF_INCLUDE $CPPFLAGS_FTORCH"
 
 # == Static library processing ==
 AR=ar

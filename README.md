@@ -37,15 +37,15 @@ To install `FTorch` follow the general instructions in the
 
 > [!NOTE]
 > The environment and compilers used to build FTorch should match those
-> used to build CLUBB. Currently CLUBB is only supported to be built with
-> `ifx` when using FTorch.
+> used to build CLUBB. Currently CLUBB is supported to be built with
+> `ifx` or `gfortran` when using FTorch.
 
 ### Building CLUBB
 
-CLUBB can be built, linking to FTorch, using the `ifx` compiler.
+CLUBB can be built, linking to FTorch, using the `ifx` or `gfortran` compilers.
 This is facilitated by modifications that have been made to the
-`compile/config/linux_x86_64_ifort.bash` file. Similar modifications
-could be made for other compilers.
+`compile/config/linux_x86_64_ifort.bash`and `compile/config/linux_x86_64_gfortran.bash`
+files. Similar modifications could be made for other compilers.
 
 Before building CLUBB one needs to add the location of the FTorch install to the
 `PKG_CONFIG_PATH` environment variable to allow the build process to locate and link
@@ -60,6 +60,11 @@ Once this is done CLUBB can be built in the normal way using:
 ```bash
 cd compile
 ./compile.bash -c config/linux_x86_64_ifort.bash
+```
+if using `ifx`, or for `gfortran`:
+```bash
+cd compile
+./compile.bash -c config/linux_x86_64_gfortran.bash
 ```
 
 ### Creating and running a case
