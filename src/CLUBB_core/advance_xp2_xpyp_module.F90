@@ -499,9 +499,9 @@ module advance_xp2_xpyp_module
 
     type(torch_tensor), dimension(1) :: c14_tensor_in
     type(torch_tensor), dimension(1) :: c14_tensor_out
-    real( kind = core_rknd ), dimension(5) :: &
+    real( kind = core_rknd ), dimension(5), target :: &
       c14_ml_input
-    real( kind = core_rknd ), dimension(1) :: &
+    real( kind = core_rknd ), dimension(1), target :: &
       c14_ml_output
     
     !------------------------------ Begin Code ------------------------------
