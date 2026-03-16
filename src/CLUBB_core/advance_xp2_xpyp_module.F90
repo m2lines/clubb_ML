@@ -630,7 +630,7 @@ module advance_xp2_xpyp_module
           call torch_delete(c14_tensor_in)
           call torch_delete(c14_tensor_out)
 
-          C14_1d(i,k) = c14_ml_output(1)
+          C14_1d(i,k) = one_third * c14_ml_output(1)
         end do
       end do
 
