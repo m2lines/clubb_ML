@@ -659,6 +659,13 @@ module advance_xp2_xpyp_module
       call timer_stop(C14_timer_total)
     endif ! l_c14_ml
     
+    ! Write the value of C14 to output on zm grid
+    if ( stats_metadata%l_stats_samp ) then
+      do i = 1, ngrdcol
+        call stat_update_var( stats_metadata%iC14, C14_1d(i,:), stats_zm(i) )
+      end do
+    end if
+
     ! Are we solving for passive scalars as well?
     if ( sclr_dim > 0 ) then
       l_scalar_calc = .true.

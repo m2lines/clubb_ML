@@ -1154,6 +1154,9 @@ module stats_variables
       ibrunt_term_time_avg = 0,   & ! the time averaged Lscale term of the grid density
       inorm_min_grid_dens = 0,     & ! the brunt-vaisala term of the grid density
       inorm_grid_dens = 0            ! the brunt-vaisala term of the grid density
+    
+    integer :: &
+      iC14 = 0 ! Index for C14 parameter, relevant for CLUBB_ML
 
 
     !====================================================================
