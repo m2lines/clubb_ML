@@ -2539,6 +2539,13 @@ module stats_zm_module
             l_silhs=.false., grid_kind=stats_zm )
           k = k + 1
         end do
+      
+      case ( 'C14' ) ! Add output for C14, relevant for CLUBB_ML
+        stats_metadata%iC14 = k
+        call stat_assign( var_index=stats_metadata%iC14, var_name="C14", &
+            var_description="C_14 parameter", var_units="-", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
 
       case default
         write(fstderr,*) 'Error:  unrecognized variable in vars_zm:  ',  trim(vars_zm(i))
