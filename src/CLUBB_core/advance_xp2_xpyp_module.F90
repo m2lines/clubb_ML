@@ -79,10 +79,16 @@ module advance_xp2_xpyp_module
 
     character(len=100), intent(in) :: &
       c14_net_filepath  ! Filepath to the C14 neural net
+    type(timer_t) :: load_timer
 
     write(unit=fstdout, fmt='(a,a)') "Reading NN from: ", c14_net_filepath
 
+    call timer_start(load_timer)
     call torch_model_load(C14_neural_net, c14_net_filepath, torch_kCPU)
+    call timer_stop(load_timer)
+
+    ! Print the load time
+    write(unit=fstdout, fmt='(a,g,a)') "C14 NN load time: ", load_timer % time_elapsed, " [s]"
 
     ! Initialise timer
     C14_timer_total = timer_t()
