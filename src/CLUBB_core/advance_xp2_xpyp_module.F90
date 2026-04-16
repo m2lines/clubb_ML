@@ -61,6 +61,8 @@ module advance_xp2_xpyp_module
   ! Global thread-unsafe timer for measuring the cumulative execution time of C14
   ! evaluation
   type(timer_t) :: C14_timer_total
+  ! Timer for the classical 'constant' assignment of the C14
+  type(timer_t) :: C14_timer_no_ml
 
   contains
 
@@ -92,6 +94,7 @@ module advance_xp2_xpyp_module
 
     ! Initialise timer
     C14_timer_total = timer_t()
+    C14_timer_no_ml = timer_t()
 
   end subroutine setup_C14_ML_xp2_xpyp
 
@@ -114,6 +117,7 @@ module advance_xp2_xpyp_module
 
     ! Print the time
     write(unit=fstdout, fmt='(a,g,a)') "C14 total evaluation time: ", C14_timer_total % time_elapsed, " [s]"
+    write(unit=fstdout, fmt='(a,g,a)') "C14 no ML time: ", C14_timer_no_ml % time_elapsed, " [s]"
 
   end subroutine clean_up_C14_ML_xp2_xpyp
 
@@ -609,6 +613,7 @@ module advance_xp2_xpyp_module
       !$acc end parallel loop
     endif ! l_C2_cloud_frac
 
+    call timer_start(C14_timer_no_ml)
     !$acc parallel loop gang vector collapse(2) default(present)
     do k = 1, nzm
       do i = 1, ngrdcol
@@ -618,6 +623,7 @@ module advance_xp2_xpyp_module
       end do
     end do
     !$acc end parallel loop
+    call timer_stop(C14_timer_no_ml)
 
     ! ML scheme for C14
     ! Currently performed in a loop one cell at a time.
