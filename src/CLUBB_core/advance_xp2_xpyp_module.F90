@@ -15,6 +15,8 @@ module advance_xp2_xpyp_module
     torch_model_load, &
     torch_model_forward, &
     torch_delete
+  use code_timer_module, only: &
+    timer_t, timer_start, timer_stop
 
   implicit none
 
@@ -56,6 +58,9 @@ module advance_xp2_xpyp_module
     ndiags5 = 5
 
   type(torch_model) :: C14_neural_net
+  ! Global thread-unsafe timer for measuring the cumulative execution time of C14
+  ! evaluation
+  type(timer_t) :: C14_timer_total
 
   contains
 
@@ -79,6 +84,9 @@ module advance_xp2_xpyp_module
 
     call torch_model_load(C14_neural_net, c14_net_filepath, torch_kCPU)
 
+    ! Initialise timer
+    C14_timer_total = timer_t()
+
   end subroutine setup_C14_ML_xp2_xpyp
 
   subroutine clean_up_C14_ML_xp2_xpyp()
@@ -97,6 +105,9 @@ module advance_xp2_xpyp_module
     write(unit=fstdout, fmt='(a)') "Deleting NN"
 
     call torch_delete( C14_neural_net )
+
+    ! Print the time
+    write(unit=fstdout, fmt='(a,g,a)') "C14 total evaluation time: ", C14_timer_total % time_elapsed, " [s]"
 
   end subroutine clean_up_C14_ML_xp2_xpyp
 
@@ -607,7 +618,7 @@ module advance_xp2_xpyp_module
     ! Once this is working we can move towards batching a column at a time or multiple
     ! columns at once.
     if ( l_c14_ml ) then
-
+      call timer_start(C14_timer_total)
       ! Interpolate Lscales from thermal to momentum grid
       Lscale_up_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_up(:,:), zero_threshold )
       Lscale_down_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_down(:,:), zero_threshold )
@@ -633,7 +644,7 @@ module advance_xp2_xpyp_module
           C14_1d(i,k) = one_third * c14_ml_output(1)
         end do
       end do
-
+      call timer_stop(C14_timer_total)
     endif ! l_c14_ml
     
     ! Are we solving for passive scalars as well?
