@@ -669,8 +669,6 @@ module advance_xp2_xpyp_module
       Lscale_up_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_up(:,:), zero_threshold )
       Lscale_down_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_down(:,:), zero_threshold )
 
-      ! Evaluate the data 
-      ! Am I transposing it right?
       do k = 1, nzm
         do i = 1, ngrdcol
           c14_ml_input((k-1) * ngrdcol + i, 1) = up2(i,k) / em(i,k)
