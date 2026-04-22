@@ -522,10 +522,10 @@ module advance_xp2_xpyp_module
     type(torch_tensor), dimension(1) :: c14_tensor_out
     integer, parameter :: c14_input_size = 5
     integer, parameter :: c14_output_size = 1
-    real( kind = core_rknd ), dimension(:,:), allocatable, save, target :: &
-      c14_ml_input
-    real( kind = core_rknd ), dimension(:,:), allocatable, save, target :: &
-      c14_ml_output
+    real( kind = core_rknd ), dimension(:), allocatable, save, target :: &
+      c14_ml_input_buffer
+    real( kind = core_rknd ), dimension(:), allocatable, save, target :: &
+      c14_ml_output_buffer
     
     !------------------------------ Begin Code ------------------------------
     
@@ -634,31 +634,31 @@ module advance_xp2_xpyp_module
     if ( l_c14_ml ) then
 
       ! Allocate and check the input buffer
-      if ( .not. allocated(c14_ml_input) ) then
-         allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
-      else if ( size(c14_ml_input, 1) /= ngrdcol * nzm ) then
+      if ( .not. allocated(c14_ml_input_buffer) ) then
+         allocate( c14_ml_input_buffer(c14_input_size * ngrdcol * nzm) )
+      else if ( size(c14_ml_input_buffer) /= ngrdcol * nzm * c14_input_size) then
         ! The size of the problem shoudn't change, but in case it does...
         write(fstderr, *) err_info%err_header_global
         write(fstderr,*) "The c14_ml_input array is not the correct shape."
         write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
         write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_input, 1)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
+        write(fstderr,*) "Original number of points: ", size(c14_ml_input_buffer)
+        write(fstderr,*) "Current number of points: ", ngrdcol * nzm * c14_input_size
         err_info%err_code = clubb_fatal_error
         return
       end if
 
       ! Allocate and check the output buffer
-      if ( .not. allocated(c14_ml_output) ) then
-          allocate( c14_ml_output(ngrdcol*nzm, c14_output_size) )
-      else if ( size(c14_ml_output) /= ngrdcol * nzm ) then
+      if ( .not. allocated(c14_ml_output_buffer) ) then
+          allocate( c14_ml_output_buffer(c14_output_size * ngrdcol * nzm) )
+      else if ( size(c14_ml_output_buffer) /= ngrdcol * nzm * c14_output_size) then
         ! The size of the problem shoudn't change, but in case it does...
         write(fstderr, *) err_info%err_header_global
         write(fstderr,*) "The c14_ml_output array is not the correct shape."
         write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
         write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_output)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
+        write(fstderr,*) "Original number of points: ", size(c14_ml_output_buffer)
+        write(fstderr,*) "Current number of points: ", ngrdcol * nzm * c14_output_size
         err_info%err_code = clubb_fatal_error
         return
       end if
@@ -669,36 +669,54 @@ module advance_xp2_xpyp_module
       Lscale_up_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_up(:,:), zero_threshold )
       Lscale_down_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_down(:,:), zero_threshold )
 
-      do k = 1, nzm
-        do i = 1, ngrdcol
-          c14_ml_input((k-1) * ngrdcol + i, 1) = up2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 4) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
-          c14_ml_input((k-1) * ngrdcol + i, 5) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
+
+      block
+        ! We need to create a row-major view of the buffer in Fortran for the FTorch constructor
+        ! This is a hack. May be brittle.
+        !
+        ! I woudn't trust the compilers to check too much the contigunity of the targets...
+        ! We need to take care ourselves it is really contiguous
+        real(kind = core_rknd), dimension(:,:), pointer :: c14_ml_input_cm, c14_ml_output_cm ! Column-major views
+        real(kind = core_rknd), dimension(:,:), contiguous, pointer :: c14_ml_input_rm, c14_ml_output_rm ! Row-major views
+
+        c14_ml_input_cm(1:c14_input_size, 1:ngrdcol * nzm) => c14_ml_input_buffer
+        c14_ml_output_cm(1:c14_output_size, 1:ngrdcol * nzm) => c14_ml_output_buffer
+
+        ! Note: do not index into this views on the Fortran side! 
+        !   Indexing will assume column major ordering. 
+        c14_ml_input_rm(1:ngrdcol * nzm, 1:c14_input_size) => c14_ml_input_buffer
+        c14_ml_output_rm(1:ngrdcol * nzm, 1:c14_output_size) => c14_ml_output_buffer
+
+
+        do k = 1, nzm
+          do i = 1, ngrdcol
+            c14_ml_input_cm(1, (k-1) * ngrdcol + i) = up2(i,k) / em(i,k)
+            c14_ml_input_cm(2, (k-1) * ngrdcol + i) = vp2(i,k) / em(i,k)
+            c14_ml_input_cm(3, (k-1) * ngrdcol + i) = wp2(i,k) / em(i,k)
+            c14_ml_input_cm(4, (k-1) * ngrdcol + i) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
+            c14_ml_input_cm(5, (k-1) * ngrdcol + i) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
+          end do
         end do
-      end do
 
-      ! I establish a tensor with all points on the leftmost index 
-      call torch_tensor_from_array(c14_tensor_in(1), c14_ml_input, torch_kCPU)
+        call torch_tensor_from_array(c14_tensor_in(1), c14_ml_input_rm, [2,1], torch_kCPU )
+        call torch_tensor_from_array(c14_tensor_out(1), c14_ml_output_rm, [2,1], torch_kCPU)
 
-      ! I need to establish a corresponging output buffer
-      call torch_tensor_from_array(c14_tensor_out(1), c14_ml_output, torch_kCPU)
+        ! Run inference
+        call torch_model_forward(C14_neural_net, c14_tensor_in, c14_tensor_out)
 
-      ! Run inference
-      call torch_model_forward(C14_neural_net, c14_tensor_in, c14_tensor_out)
+        call torch_delete(c14_tensor_in)
+        call torch_delete(c14_tensor_out)
 
-      call torch_delete(c14_tensor_in)
-      call torch_delete(c14_tensor_out)
-
-      ! Copy the output back to C14_1d
-      do k = 1, nzm
-        do i = 1, ngrdcol
-          C14_1d(i,k) = one_third * c14_ml_output((k-1) * ngrdcol + i, 1)
+        ! Copy the output back to C14_1d
+        do k = 1, nzm
+          do i = 1, ngrdcol
+            C14_1d(i,k) = one_third * c14_ml_output_cm(1, (k-1) * ngrdcol + i)
+          end do
         end do
-      end do
 
-      call timer_stop(C14_timer_total)
+        end block
+
+        call timer_stop(C14_timer_total)
     endif ! l_c14_ml
     
     ! Write the value of C14 to output on zm grid
