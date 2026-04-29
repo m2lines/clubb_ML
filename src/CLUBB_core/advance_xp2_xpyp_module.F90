@@ -420,6 +420,9 @@ module advance_xp2_xpyp_module
       sclrp2_old,    & ! Saved value of <sclr'^2>     [units vary]
       sclrprtp_old,  & ! Saved value of <sclr'rt'>    [units vary]
       sclrpthlp_old    ! Saved value of <sclr'thl'>   [units vary]
+    
+    real( kind = core_rknd ) :: & 
+      em_infer  ! TKE used for ML inference  [m^2/s^2]
 
     real( kind = core_rknd ) :: & 
       C2rt,    & ! CLUBB tunable parameter C2rt
@@ -671,9 +674,10 @@ module advance_xp2_xpyp_module
 
       do k = 1, nzm
         do i = 1, ngrdcol
-          c14_ml_input((k-1) * ngrdcol + i, 1) = up2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2(i,k) / em(i,k)
+          em_infer = max( one_half * ( up2(i,k) + vp2(i,k) + wp2(i,k) ), eps ) ! TKE at inference time step
+          c14_ml_input((k-1) * ngrdcol + i, 1) = up2(i,k) / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2(i,k) / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2(i,k) / em_infer
           c14_ml_input((k-1) * ngrdcol + i, 4) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
           c14_ml_input((k-1) * ngrdcol + i, 5) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
         end do
