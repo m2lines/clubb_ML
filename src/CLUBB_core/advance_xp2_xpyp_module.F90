@@ -90,7 +90,7 @@ module advance_xp2_xpyp_module
     call timer_stop(load_timer)
 
     ! Print the load time
-    write(unit=fstdout, fmt='(a,g,a)') "C14 NN load time: ", load_timer % time_elapsed, " [s]"
+    write(unit=fstdout, fmt='(a,g0,a)') "C14 NN load time: ", load_timer % time_elapsed, " [s]"
 
     ! Initialise timer
     C14_timer_total = timer_t()
@@ -116,8 +116,8 @@ module advance_xp2_xpyp_module
     call torch_delete( C14_neural_net )
 
     ! Print the time
-    write(unit=fstdout, fmt='(a,g,a)') "C14 total evaluation time: ", C14_timer_total % time_elapsed, " [s]"
-    write(unit=fstdout, fmt='(a,g,a)') "C14 no ML time: ", C14_timer_no_ml % time_elapsed, " [s]"
+    write(unit=fstdout, fmt='(a,g0,a)') "C14 total evaluation time: ", C14_timer_total % time_elapsed, " [s]"
+    write(unit=fstdout, fmt='(a,g0,a)') "C14 no ML time: ", C14_timer_no_ml % time_elapsed, " [s]"
 
   end subroutine clean_up_C14_ML_xp2_xpyp
 
