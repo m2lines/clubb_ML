@@ -420,6 +420,12 @@ module advance_xp2_xpyp_module
       sclrp2_old,    & ! Saved value of <sclr'^2>     [units vary]
       sclrprtp_old,  & ! Saved value of <sclr'rt'>    [units vary]
       sclrpthlp_old    ! Saved value of <sclr'thl'>   [units vary]
+    
+    real( kind = core_rknd ) :: & 
+      em_infer, &  ! TKE used for ML inference  [m^2/s^2]
+      up2_infer, & ! ensure non-negative u variance for ML inference [m^2/s^2]
+      vp2_infer, & ! ensure non-negative v variance for ML inference [m^2/s^2]
+      wp2_infer    ! ensure non-negative w variance for ML inference [m^2/s^2]
 
     real( kind = core_rknd ) :: & 
       C2rt,    & ! CLUBB tunable parameter C2rt
@@ -671,9 +677,26 @@ module advance_xp2_xpyp_module
 
       do k = 1, nzm
         do i = 1, ngrdcol
-          c14_ml_input((k-1) * ngrdcol + i, 1) = up2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2(i,k) / em(i,k)
-          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2(i,k) / em(i,k)
+          ! Protect ML inputs from small negative variances due to round-off.
+          up2_infer = max( up2(i,k), zero )
+          vp2_infer = max( vp2(i,k), zero )
+          wp2_infer = max( wp2(i,k), zero )
+          
+          ! Compute TKE at inference time so the ML normalization uses the same
+          ! up2/vp2/wp2 values that are passed to the network at k=1. This avoids 
+          ! an inconsistency introduced when calc_sfc_varnce updates the surface variances
+          ! without updating em. 
+          em_infer = one_half * ( up2_infer + vp2_infer + wp2_infer )
+
+          ! em_infer == zero implies up2, vp2, wp2 are all zero. Setting to one to avoid 
+          ! division by zero. The ML input remains zero in this case.
+          if ( em_infer == zero ) then
+            em_infer = one
+          end if
+
+          c14_ml_input((k-1) * ngrdcol + i, 1) = up2_infer / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2_infer / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2_infer / em_infer
           c14_ml_input((k-1) * ngrdcol + i, 4) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
           c14_ml_input((k-1) * ngrdcol + i, 5) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
         end do
