@@ -7,7 +7,7 @@ module advance_xp2_xpyp_module
   ! Contains the subroutine advance_xp2_xpyp and ancillary functions.
   !-----------------------------------------------------------------------
 
-  use ftorch, only: &
+  use FTorch_cesm_interface, only: &
     torch_kCPU, &  ! --------------- Type(s)
     torch_tensor, &
     torch_model, &
