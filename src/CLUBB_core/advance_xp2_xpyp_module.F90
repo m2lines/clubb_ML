@@ -7,7 +7,16 @@ module advance_xp2_xpyp_module
   ! Contains the subroutine advance_xp2_xpyp and ancillary functions.
   !-----------------------------------------------------------------------
 
-  use ftorch, only: &
+! If used in CESM, FTorch needs to be used via the special interface module that
+! wraps its API. If used in standalone CLUBB, the ftorch is used directly
+! Hence we need to conditionally select the right module name for FTorch
+#ifdef CLUBB_CAM
+  #define FTORCH_MODULE FTorch_cesm_interface
+#else
+  #define FTORCH_MODULE ftorch
+#endif
+
+  use FTORCH_MODULE, only: &
     torch_kCPU, &  ! --------------- Type(s)
     torch_tensor, &
     torch_model, &
