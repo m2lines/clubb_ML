@@ -650,32 +650,24 @@ module advance_xp2_xpyp_module
 
       ! Allocate and check the input buffer
       if ( .not. allocated(c14_ml_input) ) then
-         allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
-      else if ( size(c14_ml_input, 1) /= ngrdcol * nzm ) then
-        ! The size of the problem shoudn't change, but in case it does...
-        write(fstderr, *) err_info%err_header_global
-        write(fstderr,*) "The c14_ml_input array is not the correct shape."
-        write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
-        write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_input, 1)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
-        err_info%err_code = clubb_fatal_error
-        return
+        ! First time through; allocate the input buffer.        
+        allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
+      else if ( size(c14_ml_input, 1) /= ngrdcol * nzm .or. &
+                size(c14_ml_input, 2) /= c14_input_size ) then
+        ! Local chunk size may vary across calls; resize the input buffer.
+        deallocate( c14_ml_input )
+        allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
       end if
 
       ! Allocate and check the output buffer
       if ( .not. allocated(c14_ml_output) ) then
+          ! First time through; allocate the output buffer.
           allocate( c14_ml_output(ngrdcol*nzm, c14_output_size) )
-      else if ( size(c14_ml_output) /= ngrdcol * nzm ) then
-        ! The size of the problem shoudn't change, but in case it does...
-        write(fstderr, *) err_info%err_header_global
-        write(fstderr,*) "The c14_ml_output array is not the correct shape."
-        write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
-        write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_output)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
-        err_info%err_code = clubb_fatal_error
-        return
+      else if ( size(c14_ml_output, 1) /= ngrdcol * nzm .or. &
+                size(c14_ml_output, 2) /= c14_output_size ) then
+        ! Local chunk size may vary across calls; resize the output buffer.
+        deallocate( c14_ml_output )
+        allocate( c14_ml_output(ngrdcol*nzm, c14_output_size) )
       end if
 
 
