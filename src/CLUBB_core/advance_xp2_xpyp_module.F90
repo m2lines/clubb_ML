@@ -190,6 +190,7 @@ module advance_xp2_xpyp_module
         max_mag_correlation_flux, &
         cloud_frac_min, &
         fstderr, &
+        fstdout, &
         two, &
         one, &
         two_thirds, &
@@ -648,34 +649,47 @@ module advance_xp2_xpyp_module
     ! columns at once.
     if ( l_c14_ml ) then
 
+      write(fstdout, *) "C14 ML expected shapes: npts (ngrdcol*nzm)=", ngrdcol*nzm, &
+                        " c14_input_size=", c14_input_size, " c14_output_size=", c14_output_size
+      if ( allocated(c14_ml_input) ) then
+        write(fstdout, *) "C14 ML input buffer pre-call shape: ", &
+                          size(c14_ml_input,1), size(c14_ml_input,2)
+      else
+        write(fstdout, *) "C14 ML input buffer pre-call shape: unallocated"
+      end if
+      if ( allocated(c14_ml_output) ) then
+        write(fstdout, *) "C14 ML output buffer pre-call shape: ", &
+                          size(c14_ml_output,1), size(c14_ml_output,2)
+      else
+        write(fstdout, *) "C14 ML output buffer pre-call shape: unallocated"
+      end if
+
       ! Allocate and check the input buffer
       if ( .not. allocated(c14_ml_input) ) then
+         write(fstdout, *) "Allocating C14 ML input buffer: ", ngrdcol*nzm, c14_input_size
          allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
-      else if ( size(c14_ml_input, 1) /= ngrdcol * nzm ) then
-        ! The size of the problem shoudn't change, but in case it does...
-        write(fstderr, *) err_info%err_header_global
-        write(fstderr,*) "The c14_ml_input array is not the correct shape."
-        write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
-        write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_input, 1)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
-        err_info%err_code = clubb_fatal_error
-        return
+      else if ( size(c14_ml_input, 1) /= ngrdcol * nzm .or. &
+                size(c14_ml_input, 2) /= c14_input_size ) then
+        ! Local chunk size may vary across calls; resize the input buffer.
+        write(fstdout, *) "Reallocating C14 ML input buffer. old/new: ", &
+                          size(c14_ml_input,1), size(c14_ml_input,2), &
+                          ngrdcol*nzm, c14_input_size
+        deallocate( c14_ml_input )
+        allocate( c14_ml_input(ngrdcol*nzm, c14_input_size) )
       end if
 
       ! Allocate and check the output buffer
       if ( .not. allocated(c14_ml_output) ) then
+          write(fstdout, *) "Allocating C14 ML output buffer: ", ngrdcol*nzm, c14_output_size
           allocate( c14_ml_output(ngrdcol*nzm, c14_output_size) )
-      else if ( size(c14_ml_output) /= ngrdcol * nzm ) then
-        ! The size of the problem shoudn't change, but in case it does...
-        write(fstderr, *) err_info%err_header_global
-        write(fstderr,*) "The c14_ml_output array is not the correct shape."
-        write(fstderr,*) "This may indicate the number of columns or vertical levels has changed."
-        write(fstderr,*) "This should not happen..."
-        write(fstderr,*) "Original number of points: ", size(c14_ml_output)
-        write(fstderr,*) "Current number of points: ", ngrdcol * nzm
-        err_info%err_code = clubb_fatal_error
-        return
+      else if ( size(c14_ml_output, 1) /= ngrdcol * nzm .or. &
+                size(c14_ml_output, 2) /= c14_output_size ) then
+        ! Local chunk size may vary across calls; resize the output buffer.
+        write(fstdout, *) "Reallocating C14 ML output buffer. old/new: ", &
+                          size(c14_ml_output,1), size(c14_ml_output,2), &
+                          ngrdcol*nzm, c14_output_size
+        deallocate( c14_ml_output )
+        allocate( c14_ml_output(ngrdcol*nzm, c14_output_size) )
       end if
 
 
