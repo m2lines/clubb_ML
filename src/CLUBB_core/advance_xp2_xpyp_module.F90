@@ -27,6 +27,9 @@ module advance_xp2_xpyp_module
   use code_timer_module, only: &
     timer_t, timer_start, timer_stop
 
+  use perf_mod, only: &
+    t_startf, t_stopf
+
   implicit none
 
   public :: setup_C14_ML_xp2_xpyp, &
@@ -647,6 +650,8 @@ module advance_xp2_xpyp_module
     ! Once this is working we can move towards batching a column at a time or multiple
     ! columns at once.
     if ( l_c14_ml ) then
+      call timer_start(C14_timer_total)
+      call t_startf('advance_xm_wpxp:c14_ml_inference')
 
       ! Allocate and check the input buffer
       if ( .not. allocated(c14_ml_input) ) then
@@ -671,7 +676,7 @@ module advance_xp2_xpyp_module
       end if
 
 
-      call timer_start(C14_timer_total)
+
       ! Interpolate Lscales from thermal to momentum grid
       Lscale_up_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_up(:,:), zero_threshold )
       Lscale_down_zm(:,:) = zt2zm_api( nzm, nzt, ngrdcol, gr, Lscale_down(:,:), zero_threshold )
@@ -722,6 +727,7 @@ module advance_xp2_xpyp_module
         end do
       end do
 
+      call t_stopf('advance_xm_wpxp:c14_ml_inference')
       call timer_stop(C14_timer_total)
     endif ! l_c14_ml
     
