@@ -2634,6 +2634,41 @@ module stats_zm_module
             var_description="C_14 parameter", var_units="-", &
             l_silhs=.false., grid_kind=stats_zm )
         k = k + 1
+      
+      case ( 'up2_infer' ) ! Add output for up2 at inference time, relevant for CLUBB_ML
+        stats_metadata%iup2_infer = k
+        call stat_assign( var_index=stats_metadata%iup2_infer, var_name="up2_infer", &
+            var_description="u'^2, Variance of eastward (u) wind at CLUBB_ML inference", var_units="m^2/s^2", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
+      
+      case ( 'vp2_infer' ) ! Add output for vp2 at inference time, relevant for CLUBB_ML
+        stats_metadata%ivp2_infer = k
+        call stat_assign( var_index=stats_metadata%ivp2_infer, var_name="vp2_infer", &
+            var_description="v'^2, Variance of northward (v) wind at CLUBB_ML inference", var_units="m^2/s^2", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
+      
+      case ( 'wp2_infer' ) ! Add output for wp2 at inference time, relevant for CLUBB_ML
+        stats_metadata%iwp2_infer = k
+        call stat_assign( var_index=stats_metadata%iwp2_infer, var_name="wp2_infer", &
+            var_description="w'^2, Variance of vertical (w) wind at CLUBB_ML inference", var_units="m^2/s^2", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
+
+      case ( 'Lscale_up_zm' ) ! Add output for Lscale_up, relevant for CLUBB_ML
+        stats_metadata%iLscale_up_zm = k
+        call stat_assign( var_index=stats_metadata%iLscale_up_zm, var_name="Lscale_up_zm", &
+            var_description="Lscale_up, Upward mixing length on momentum grid", var_units="m", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
+
+      case ( 'Lscale_down_zm' ) ! Add output for Lscale_down, relevant for CLUBB_ML
+        stats_metadata%iLscale_down_zm = k
+        call stat_assign( var_index=stats_metadata%iLscale_down_zm, var_name="Lscale_down_zm", &
+            var_description="Lscale_down, Downward mixing length on momentum grid", var_units="m", &
+            l_silhs=.false., grid_kind=stats_zm )
+        k = k + 1
 
       case default
         write(fstderr,*) 'Error:  unrecognized variable in vars_zm:  ',  trim(vars_zm(i))

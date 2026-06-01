@@ -1156,7 +1156,13 @@ module stats_variables
       inorm_grid_dens = 0            ! the brunt-vaisala term of the grid density
     
     integer :: &
-      iC14 = 0 ! Index for C14 parameter, relevant for CLUBB_ML
+      iC14 = 0, & ! Index for C14 parameter, relevant for CLUBB_ML
+      iup2_infer = 0, & ! Index for up2 at inference time, relevant for CLUBB_ML
+      ivp2_infer = 0, & ! Index for vp2 at inference time, relevant for CLUBB_ML
+      iwp2_infer = 0, & ! Index for wp2 at inference time, relevant for CLUBB_ML
+      iLscale_down_zm = 0, & ! Index for Lscale_down on momentum grid, relevant for CLUBB_ML
+      iLscale_up_zm = 0 ! Index for Lscale_up on momentum grid, relevant for CLUBB_ML
+
 
 
     !====================================================================
