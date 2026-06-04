@@ -190,6 +190,7 @@ module advance_xp2_xpyp_module
         max_mag_correlation_flux, &
         cloud_frac_min, &
         fstderr, &
+        three, &
         two, &
         one, &
         two_thirds, &
@@ -431,7 +432,9 @@ module advance_xp2_xpyp_module
       sclrpthlp_old    ! Saved value of <sclr'thl'>   [units vary]
     
     real( kind = core_rknd ) :: & 
-      em_infer, &  ! TKE used for ML inference  [m^2/s^2]
+      em_infer     ! TKE used for ML inference  [m^2/s^2]
+
+    real( kind = core_rknd ), dimension(ngrdcol,nzm) :: &   
       up2_infer, & ! ensure non-negative u variance for ML inference [m^2/s^2]
       vp2_infer, & ! ensure non-negative v variance for ML inference [m^2/s^2]
       wp2_infer    ! ensure non-negative w variance for ML inference [m^2/s^2]
@@ -679,15 +682,15 @@ module advance_xp2_xpyp_module
       do k = 1, nzm
         do i = 1, ngrdcol
           ! Protect ML inputs from small negative variances due to round-off.
-          up2_infer = max( up2(i,k), zero )
-          vp2_infer = max( vp2(i,k), zero )
-          wp2_infer = max( wp2(i,k), zero )
+          up2_infer(i,k) = max( up2(i,k), zero )
+          vp2_infer(i,k) = max( vp2(i,k), zero )
+          wp2_infer(i,k) = max( wp2(i,k), zero )
           
           ! Compute TKE at inference time so the ML normalization uses the same
           ! up2/vp2/wp2 values that are passed to the network at k=1. This avoids 
           ! an inconsistency introduced when calc_sfc_varnce updates the surface variances
           ! without updating em. 
-          em_infer = one_half * ( up2_infer + vp2_infer + wp2_infer )
+          em_infer = one_half * ( up2_infer(i,k) + vp2_infer(i,k) + wp2_infer(i,k) )
 
           ! em_infer == zero implies up2, vp2, wp2 are all zero. Setting to one to avoid 
           ! division by zero. The ML input remains zero in this case.
@@ -695,9 +698,9 @@ module advance_xp2_xpyp_module
             em_infer = one
           end if
 
-          c14_ml_input((k-1) * ngrdcol + i, 1) = up2_infer / em_infer
-          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2_infer / em_infer
-          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2_infer / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 1) = up2_infer(i,k) / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 2) = vp2_infer(i,k) / em_infer
+          c14_ml_input((k-1) * ngrdcol + i, 3) = wp2_infer(i,k) / em_infer
           c14_ml_input((k-1) * ngrdcol + i, 4) = Lscale_up_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
           c14_ml_input((k-1) * ngrdcol + i, 5) = Lscale_down_zm(i,k) / 1000.0_core_rknd  ! Normalised by 1km per training
         end do
@@ -723,12 +726,23 @@ module advance_xp2_xpyp_module
       end do
 
       call timer_stop(C14_timer_total)
+
+      ! Write the model inputs to the stats struct for diagnostics
+      if ( stats_metadata%l_stats_samp ) then
+        do i = 1, ngrdcol
+          call stat_update_var( stats_metadata%iup2_infer, up2_infer(i,:), stats_zm(i) )
+          call stat_update_var( stats_metadata%ivp2_infer, vp2_infer(i,:), stats_zm(i) )
+          call stat_update_var( stats_metadata%iwp2_infer, wp2_infer(i,:), stats_zm(i) )
+          call stat_update_var( stats_metadata%iLscale_up_zm, Lscale_up_zm(i,:), stats_zm(i) )
+          call stat_update_var( stats_metadata%iLscale_down_zm, Lscale_down_zm(i,:), stats_zm(i) )
+        end do
+      end if
     endif ! l_c14_ml
     
     ! Write the value of C14 to output on zm grid
     if ( stats_metadata%l_stats_samp ) then
       do i = 1, ngrdcol
-        call stat_update_var( stats_metadata%iC14, C14_1d(i,:), stats_zm(i) )
+        call stat_update_var( stats_metadata%iC14, three * C14_1d(i,:), stats_zm(i) )
       end do
     end if
 
