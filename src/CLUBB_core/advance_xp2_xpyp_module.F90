@@ -190,6 +190,7 @@ module advance_xp2_xpyp_module
         max_mag_correlation_flux, &
         cloud_frac_min, &
         fstderr, &
+        three, &
         two, &
         one, &
         two_thirds, &
@@ -741,7 +742,7 @@ module advance_xp2_xpyp_module
     ! Write the value of C14 to output on zm grid
     if ( stats_metadata%l_stats_samp ) then
       do i = 1, ngrdcol
-        call stat_update_var( stats_metadata%iC14, C14_1d(i,:), stats_zm(i) )
+        call stat_update_var( stats_metadata%iC14, three * C14_1d(i,:), stats_zm(i) )
       end do
     end if
 
