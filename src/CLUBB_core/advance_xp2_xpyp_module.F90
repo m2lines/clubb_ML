@@ -88,7 +88,7 @@ module advance_xp2_xpyp_module
 
     implicit none
 
-    character(len=100), intent(in) :: &
+    character(len=256), intent(in) :: &
       c14_net_filepath  ! Filepath to the C14 neural net
     type(timer_t) :: load_timer
 
