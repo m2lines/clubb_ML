@@ -11,6 +11,11 @@ the [`larson-group/clubb_release` branch](https://github.com/larson-group/clubb_
 The main CLUBB README is not changed and can be found in [`README`](./README).
 Information specific to running this fork of CLUBB is included in this README.md file.
 
+## Running with CESM
+
+Instructions for running CLUBB-ML through CESM, including single-column and
+multi-column cases, are documented in [HOW_TO_RUN_WITH_CESM.md](./HOW_TO_RUN_WITH_CESM.md).
+
 
 ## Using this model
 
