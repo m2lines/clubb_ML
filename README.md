@@ -114,6 +114,8 @@ The modifications in this fork to couple FTorch and use neural net parameterisat
 was performed by research software engineer [Jack Atkinson](https://jackatkinson.net/)
 of the [Institute of Computing for Climate Science (ICCS)](https://iccs.cam.ac.uk/).
 
+David Kamm and Mikolaj A. Kowalski of the [Institute of Computing for Climate Science (ICCS)](https://iccs.cam.ac.uk/) have performed the integration of the ML-enabled CLUBB into CESM.
+
 Subgrid schemes to be coupled were trained by [Alex Connolly](https://adconnolly.github.io/)
 of the [Gentine Lab](https://gentinelab.eee.columbia.edu/home) as part of the CLUBBiNN
 project.
