@@ -343,7 +343,7 @@ module model_flags
       l_add_dycore_grid,            & ! Turn on remapping values from the dycore grid
       l_c14_ml                        ! Flag to turn on neural net C14 scheme
 
-    character(len=100) :: &
+    character(len=256) :: &
       c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
   end type clubb_config_flags_type
@@ -575,7 +575,7 @@ module model_flags
       l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
       l_c14_ml                        ! Flag to turn on neural net C14 scheme
 
-    character(len=100), intent(out) :: &
+    character(len=256), intent(out) :: &
       c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
 !-----------------------------------------------------------------------
@@ -887,7 +887,7 @@ module model_flags
       l_add_dycore_grid,            & ! Turn on remapping from the dycore grid
       l_c14_ml                        ! Flag to turn on neural net C14 scheme
 
-    character(len=100) :: &
+    character(len=256) :: &
       c14_ml_net_filepath  ! Filepath to the C14 neural net to be used if l_c14_ml is on
 
     ! Output variables
