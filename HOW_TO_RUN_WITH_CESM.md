@@ -163,7 +163,7 @@ Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
 
 ## Locate outputs and logs
 
-After both jobs succeed, outputs are available under `$SCRATCH/archive/test_run`.
+After both jobs succeed, outputs and **logs** are available under `$SCRATCH/archive/test_run`.
 
 Example archive layout:
 
