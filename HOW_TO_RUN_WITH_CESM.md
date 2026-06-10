@@ -40,6 +40,13 @@ For a multi-column run, use:
 ./cime/scripts/create_newcase --case $WORK/CLUBB_cases/test_run --compset FHISTC_LTso --res ne3pg3_ne3pg3_mt232 --project <PROJECT_ID> --run-unsupported
 ```
 
+> [!NOTE]
+> In the snippets above, the case is chosen by the `--compset` flag and selects the single/multi-column configuration
+> (the SCAM in `FSCAMTWP06` stands for '**S**ingle-column **CAM**). The `--res` flag selects the grid resolution.
+> The cases we present above are just for demonstration and you may need to adapt them based on the needs of your
+> simulation.
+
+
 This creates a new case directory at `$WORK/CLUBB_cases/test_run`.
 
 The following steps apply both to the single-column and multi-column cases, unless otherwise noted.
