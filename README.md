@@ -101,6 +101,10 @@ This could make the benchmark runs from this repository deviate with respect to 
 versions of CLUBB.
 
 
+## Performance of the Machine Learning scheme in CESM
+
+Ths details on the performance and how it can be measured in the CESM context are provided in the [TIMING_CESM_PERFORMANCE.md](./TIMING_CESM_PERFORMANCE.md) document.
+
 ## Authors and Acknowledgments
 
 The original CLUBB code is written and maintained by the [Larson Group](https://sites.uwm.edu/vlarson/clubb/).
