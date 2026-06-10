@@ -68,6 +68,34 @@ user_nl_cpl
 user_nl_docn
 user_nl_docn_streams
 ```
+## Choose a run mode
+
+### Run with ML C14 disabled
+
+Build and submit the case directly:
+
+```bash
+./case.build
+./case.submit
+```
+
+### Run with ML C14 enabled
+
+Edit `user_nl_cam` and add:
+
+```fortran
+clubb_l_c14_ml = .true.
+clubb_c14_ml_net_filepath = "/glade/u/home/user/path/to/c14_model.pt"
+```
+
+The first parameter enables ML evaluation of the C14 coefficient. The second sets the path to the TorchScript model. The model path is currently limited to 256 characters.
+
+Then build and submit the case:
+
+```bash
+./case.build
+./case.submit
+```
 
 ## Optional: configure extra ML diagnostics output
 
@@ -109,36 +137,6 @@ The extra variables relevant to the ML-enabled CLUBB are:
 > output by CLUBB by default. At the moment the reason for this difference is
 > not established. The variables listed here are the exact values that are used
 > as inputs to the ML model.
-
-
-## Choose a run mode
-
-### Run with ML C14 disabled
-
-Build and submit the case directly:
-
-```bash
-./case.build
-./case.submit
-```
-
-### Run with ML C14 enabled
-
-Edit `user_nl_cam` and add:
-
-```fortran
-clubb_l_c14_ml = .true.
-clubb_c14_ml_net_filepath = "/glade/u/home/user/path/to/c14_model.pt"
-```
-
-The first parameter enables ML evaluation of the C14 coefficient. The second sets the path to the TorchScript model. The model path is currently limited to 256 characters.
-
-Then build and submit the case:
-
-```bash
-./case.build
-./case.submit
-```
 
 ## Monitor the run
 
