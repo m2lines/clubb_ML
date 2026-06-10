@@ -27,8 +27,23 @@ module advance_xp2_xpyp_module
   use code_timer_module, only: &
     timer_t, timer_start, timer_stop
 
+! To measure performance we want to plug-in to the CESM timers infrastructure.
+! However, yet again it is only available if we are compiling inside CESM,
+! so we need to rely on conditional compilation.
+!
+! We use a defined preprocessor macro to avoid putting ifdef-else closes in
+! the source code. Not that you should not quote (i.e. "") the argument of the
+! macro, the text will be verbatim translated into the measurement label.
+#ifdef CLUBB_CAM
   use perf_mod, only: &
     t_startf, t_stopf
+
+  #define CESM_PERF_START( label ) call t_startf( #label )
+  #define CESM_PERF_STOP( label ) call t_stopf( #label )
+#else
+  #define CESM_PERF_START( label )
+  #define CESM_PERF_STOP( label )
+#endif
 
   implicit none
 
@@ -651,7 +666,7 @@ module advance_xp2_xpyp_module
     ! columns at once.
     if ( l_c14_ml ) then
       call timer_start(C14_timer_total)
-      call t_startf('advance_xm_wpxp:c14_ml_inference')
+      CESM_PERF_START(advance_xm_wpxp:c14_ml_inference)
 
       ! Allocate and check the input buffer
       if ( .not. allocated(c14_ml_input) ) then
@@ -727,7 +742,7 @@ module advance_xp2_xpyp_module
         end do
       end do
 
-      call t_stopf('advance_xm_wpxp:c14_ml_inference')
+      CESM_PERF_STOP(advance_xm_wpxp:c14_ml_inference)
       call timer_stop(C14_timer_total)
     endif ! l_c14_ml
     
