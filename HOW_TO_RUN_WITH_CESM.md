@@ -87,7 +87,7 @@ history_clubb = .false.
 clubb_vars_zm = 'C14', 'up2_infer', 'vp2_infer', 'wp2_infer', 'Lscale_up_zm', 'Lscale_down_zm'
 
 ! Include in history stream 1; I stands for instantaneous (A means average)
-fincl1 = 'C14:I', 'up2_infer:I', 'vp2_infer:I', 'wp2_infer:I', 'Lscale_up_zm:I', 'Lscale_down_zm:I'
+fincl1 = 'C14:A', 'up2_infer:A', 'vp2_infer:A', 'wp2_infer:A', 'Lscale_up_zm:A', 'Lscale_down_zm:A'
 
 ! Optional, modify output frequency
 nhtfrq = 2
