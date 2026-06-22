@@ -11,6 +11,11 @@ the [`larson-group/clubb_release` branch](https://github.com/larson-group/clubb_
 The main CLUBB README is not changed and can be found in [`README`](./README).
 Information specific to running this fork of CLUBB is included in this README.md file.
 
+## Running with CESM
+
+Instructions for running CLUBB-ML through CESM, including single-column and
+multi-column cases, are documented in [HOW_TO_RUN_WITH_CESM.md](./HOW_TO_RUN_WITH_CESM.md).
+
 
 ## Using this model
 
@@ -108,6 +113,8 @@ The original CLUBB code is written and maintained by the [Larson Group](https://
 The modifications in this fork to couple FTorch and use neural net parameterisations
 was performed by research software engineer [Jack Atkinson](https://jackatkinson.net/)
 of the [Institute of Computing for Climate Science (ICCS)](https://iccs.cam.ac.uk/).
+
+David Kamm and Mikolaj A. Kowalski of the [Institute of Computing for Climate Science (ICCS)](https://iccs.cam.ac.uk/) have performed the integration of the ML-enabled CLUBB into CESM.
 
 Subgrid schemes to be coupled were trained by [Alex Connolly](https://adconnolly.github.io/)
 of the [Gentine Lab](https://gentinelab.eee.columbia.edu/home) as part of the CLUBBiNN
