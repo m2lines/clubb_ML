@@ -723,7 +723,7 @@ module advance_xp2_xpyp_module
         do i = 1, ngrdcol
           ! clubb_params(i,iC14) is the non-ML C14 parameter 
           ! reused as tuning parameter for the ML predictions
-          C14_1d(i,k) = clubb_params(i,iC14) * one_third * c14_ml_output((k-1) * ngrdcol + i, 1)
+          C14_1d(i,k) = one_third * clubb_params(i,iC14) * c14_ml_output((k-1) * ngrdcol + i, 1)
         end do
       end do
 
