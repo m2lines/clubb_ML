@@ -721,7 +721,9 @@ module advance_xp2_xpyp_module
       ! Copy the output back to C14_1d
       do k = 1, nzm
         do i = 1, ngrdcol
-          C14_1d(i,k) = one_third * c14_ml_output((k-1) * ngrdcol + i, 1)
+          ! clubb_params(i,iC14) is the non-ML C14 parameter 
+          ! reused as tuning parameter for the ML predictions
+          C14_1d(i,k) = clubb_params(i,iC14) * one_third * c14_ml_output((k-1) * ngrdcol + i, 1)
         end do
       end do
 
